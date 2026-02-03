@@ -208,6 +208,13 @@ body::before {
   display: block;
 }
 
+.product-name {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--charcoal);
+  font-weight: 700;
+}
+
 .price {
   font-weight: 700;
   color: var(--burgundy);
