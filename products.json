@@ -1,0 +1,82 @@
+[
+  {
+    "id": "minced-meat",
+    "name": "لحم مفروم بلدي",
+    "price": 390,
+    "image": "assets/item1.png",
+    "alt": "لحم مفروم بلدي",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "sausage",
+    "name": "سجق بلدي",
+    "price": 380,
+    "image": "assets/item2.png",
+    "alt": "سجق بلدي",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "fillet",
+    "name": "عرق الفلتو",
+    "price": 530,
+    "image": "assets/item3.png",
+    "alt": "عرق الفلتو",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "rosto",
+    "name": "عرق الرستو",
+    "price": 480,
+    "image": "assets/rosto.png",
+    "alt": "عرق الرستو",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "tashkila",
+    "name": "تشكيلة الأستاذ",
+    "price": 980,
+    "image": "assets/tashkila.png",
+    "alt": "تشكيلة الأستاذ",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "cubes",
+    "name": "لحم مكعبات",
+    "price": 450,
+    "image": "assets/cubes.png",
+    "alt": "لحم مكعبات",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "bone-in",
+    "name": "لحم بالعضم",
+    "price": 400,
+    "image": "assets/bone.png",
+    "alt": "لحم بالعضم",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
+    "id": "kolata",
+    "name": "الكولاته",
+    "price": 0,
+    "image": "assets/item4.png",
+    "alt": "الكولاته",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  }
+]
