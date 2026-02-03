@@ -332,16 +332,16 @@ function renderProducts() {
 
     const priceMarkup = hasDiscount
       ? `
-      <div class="price-label">سعر الكيلو</div>
       <div class="price-block">
         <span class="price-old">${formatPrice(product.price)}</span>
         <span class="price-new">${formatPrice(effectivePrice)}</span>
       </div>
+      <div class="price-label">سعر الكيلو</div>
       <div class="deal-period">${periodText}</div>
     `
       : `
-      <div class="price-label">سعر الكيلو</div>
       <div class="price">${formatPrice(product.price)}</div>
+      <div class="price-label">سعر الكيلو</div>
     `;
 
     card.innerHTML = `
@@ -361,7 +361,7 @@ function renderProducts() {
       button.classList.add("bump");
 
       const current = cart.get(product.id);
-      const qty = current ? roundQty(current.qty + QTY_STEP) : QTY_STEP;
+      const qty = current ? roundQty(current.qty + QTY_STEP) : 1;
       cart.set(product.id, {
         ...product,
         qty,
