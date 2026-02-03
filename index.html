@@ -60,6 +60,53 @@
         </aside>
       </main>
 
+      <section class="admin" id="admin" aria-hidden="true">
+        <div class="admin-header">
+          <div class="section-title">
+            <h2>إدارة المنتجات</h2>
+            <p>إضافة أو تعديل الأسعار والصور يتم حفظه على جهازك مباشرة.</p>
+          </div>
+          <button class="ghost" type="button" id="adminLogout">تسجيل الخروج</button>
+        </div>
+        <form class="admin-form" id="addProductForm">
+          <div class="field">
+            <span>اسم المنتج</span>
+            <input type="text" name="name" required placeholder="مثال: لحم مفروم بلدي" />
+          </div>
+          <div class="field">
+            <span>السعر (ج.م)</span>
+            <input type="number" name="price" required min="0" step="1" placeholder="مثال: 390" />
+          </div>
+          <div class="field">
+            <span>سعر العرض (اختياري)</span>
+            <input type="number" name="discountPrice" min="0" step="1" placeholder="مثال: 350" />
+          </div>
+          <div class="field">
+            <span>بداية العرض</span>
+            <input type="date" name="discountStart" />
+          </div>
+          <div class="field">
+            <span>نهاية العرض</span>
+            <input type="date" name="discountEnd" />
+          </div>
+          <div class="field">
+            <span>رابط الصورة (اختياري)</span>
+            <input
+              type="text"
+              name="imageUrl"
+              placeholder="assets/xxx.png أو https://..."
+            />
+          </div>
+          <div class="field">
+            <span>رفع صورة من الجهاز (اختياري)</span>
+            <input type="file" name="imageFile" accept="image/*" />
+          </div>
+          <button type="submit" class="add-btn">إضافة منتج</button>
+        </form>
+
+        <div class="admin-list" id="adminList"></div>
+      </section>
+
       <footer class="footer">
         <div>
           <strong>لحوم الأستاذ</strong>
@@ -82,7 +129,9 @@
       </footer>
 
       <div class="powered-by">
-        <span>Powered by Mahmoud Awad</span>
+        <button class="powered-by-btn" type="button" id="adminTrigger">
+          Powered by Mahmoud Awad
+        </button>
       </div>
     </div>
 
@@ -111,6 +160,31 @@
           <div class="modal-actions">
             <button type="submit" class="whatsapp">إرسال الطلب</button>
             <button type="button" class="ghost" data-close-modal>إلغاء</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="adminModal" aria-hidden="true" role="dialog" aria-labelledby="adminTitle">
+      <div class="modal-backdrop" data-close-admin></div>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="adminTitle">تسجيل دخول الإدارة</h3>
+          <button type="button" class="modal-close" data-close-admin aria-label="إغلاق">×</button>
+        </div>
+        <form id="adminForm" class="modal-form">
+          <label class="field">
+            <span>اسم المستخدم</span>
+            <input type="text" name="username" required minlength="3" placeholder="admin" />
+          </label>
+          <label class="field">
+            <span>كلمة المرور</span>
+            <input type="password" name="password" required minlength="4" placeholder="••••••" />
+          </label>
+          <p class="admin-error" id="adminError" role="alert"></p>
+          <div class="modal-actions">
+            <button type="submit" class="whatsapp">دخول</button>
+            <button type="button" class="ghost" data-close-admin>إلغاء</button>
           </div>
         </form>
       </div>
