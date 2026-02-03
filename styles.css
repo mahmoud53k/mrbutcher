@@ -214,6 +214,12 @@ body::before {
   font-size: 1.1rem;
 }
 
+.price-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .price-block {
   display: grid;
   gap: 6px;
@@ -786,4 +792,9 @@ input:disabled {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+.unit-price {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
 }
