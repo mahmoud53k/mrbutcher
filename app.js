@@ -19,10 +19,10 @@ const products = [
   },
   {
     id: "fillet",
-    name: "عرق الفلتو",
-    price: 530,
+    name: "kolata",
+    price: 0,
     image: "assets/item3.png",
-    alt: "عرق الفلتو",
+    alt: "kolata",
   },
   {
     id: "rosto",
@@ -53,11 +53,11 @@ const products = [
     alt: "لحم بالعضم",
   },
   {
-    id: "kolata",
-    name: "الكولاته",
-    price: 0,
+    id: "عرق الفلتو",
+    name: "عرق الفلتو",
+    price: 530,
     image: "assets/item4.png",
-    alt: "الكولاته",
+    alt: "عرق الفلتو",
   },
 ];
 
