@@ -349,6 +349,7 @@ function renderProducts() {
       <div class="product-image">
         <img src="${product.image}" alt="${product.alt}" loading="lazy" />
       </div>
+      <h3 class="product-name">${product.name}</h3>
       ${priceMarkup}
       <button class="add-btn">إضافة للسلة</button>
     `;
