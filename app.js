@@ -28,7 +28,7 @@ const products = [
     id: "rosto",
     name: "عرق الرستو",
     price: 480,
-    image: "assets/item4.png",
+    image: "assets/rosto.png",
     alt: "عرق الرستو",
   },
   {
@@ -56,7 +56,7 @@ const products = [
     id: "kolata",
     name: "الكولاته",
     price: 0,
-    image: "assets/rosto.png",
+    image: "assets/item4.png",
     alt: "الكولاته",
   },
 ];
