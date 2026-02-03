@@ -7,6 +7,7 @@ const ADMIN_PASSWORD = "1122026";
 const ADMIN_KEY = "lahm-admin-unlocked";
 const MAX_IMAGE_SIZE = 900;
 const IMAGE_QUALITY = 0.8;
+const QTY_STEP = 0.5;
 
 const defaultProducts = [
   {
@@ -304,6 +305,15 @@ function formatPrice(value) {
   return `${value.toFixed(2)} ${CURRENCY}`;
 }
 
+function roundQty(value) {
+  return Math.round(value / QTY_STEP) * QTY_STEP;
+}
+
+function formatQty(value) {
+  const rounded = roundQty(value);
+  return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1);
+}
+
 function renderProducts() {
   productGrid.innerHTML = "";
 
@@ -322,13 +332,17 @@ function renderProducts() {
 
     const priceMarkup = hasDiscount
       ? `
+      <div class="price-label">سعر الكيلو</div>
       <div class="price-block">
         <span class="price-old">${formatPrice(product.price)}</span>
         <span class="price-new">${formatPrice(effectivePrice)}</span>
       </div>
       <div class="deal-period">${periodText}</div>
     `
-      : `<div class="price">${formatPrice(product.price)}</div>`;
+      : `
+      <div class="price-label">سعر الكيلو</div>
+      <div class="price">${formatPrice(product.price)}</div>
+    `;
 
     card.innerHTML = `
       ${hasDiscount ? '<span class="deal-badge">عرض</span>' : ""}
@@ -347,7 +361,7 @@ function renderProducts() {
       button.classList.add("bump");
 
       const current = cart.get(product.id);
-      const qty = current ? current.qty + 1 : 1;
+      const qty = current ? roundQty(current.qty + QTY_STEP) : QTY_STEP;
       cart.set(product.id, {
         ...product,
         qty,
@@ -385,22 +399,22 @@ function renderCart() {
       <div class="row">
         <div class="qty-controls" aria-label="تعديل الكمية">
           <button class="qty-btn" type="button" data-action="decrease">-</button>
-          <span>${item.qty}</span>
+          <span>${formatQty(item.qty)}</span>
           <button class="qty-btn" type="button" data-action="increase">+</button>
         </div>
-        <span>${unitPrice} ${CURRENCY}</span>
+        <span class="unit-price">سعر الكيلو: ${formatPrice(unitPrice)}</span>
         <span>${formatPrice(subtotal)}</span>
       </div>
       <button class="remove-btn" type="button">إزالة</button>
     `;
 
     row.querySelector('[data-action="increase"]').addEventListener("click", () => {
-      cart.set(item.id, { ...item, qty: item.qty + 1 });
+      cart.set(item.id, { ...item, qty: roundQty(item.qty + QTY_STEP) });
       renderCart();
     });
 
     row.querySelector('[data-action="decrease"]').addEventListener("click", () => {
-      const nextQty = item.qty - 1;
+      const nextQty = roundQty(item.qty - QTY_STEP);
       if (nextQty <= 0) {
         cart.delete(item.id);
       } else {
@@ -604,7 +618,9 @@ function buildWhatsAppMessage() {
     const unitPrice = getEffectivePrice(item);
     const subtotal = item.qty * unitPrice;
     lines.push(
-      `- ${item.name}: ${item.qty} × ${unitPrice} = ${subtotal.toFixed(2)} ${CURRENCY}`
+      `- ${item.name}: ${formatQty(item.qty)} كجم × ${unitPrice} = ${subtotal.toFixed(
+        2
+      )} ${CURRENCY}`
     );
   });
 
