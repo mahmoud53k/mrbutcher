@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Changa:wght@600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="styles.css?v=5" />
   </head>
   <body>
     <div class="page">
@@ -64,17 +64,15 @@
         <div class="admin-header">
           <div class="section-title">
             <h2>إدارة المنتجات</h2>
-            <p>إضافة أو تعديل الأسعار والصور يتم حفظه على جهازك مباشرة.</p>
+            <p>التعديلات تُحفظ فورًا على قاعدة البيانات وتظهر للجميع.</p>
           </div>
           <div class="admin-controls">
-            <button class="ghost" type="button" id="reloadProducts">تحميل من GitHub</button>
-            <button class="save-btn" type="button" id="exportProducts">تصدير products.json</button>
+            <button class="save-btn" type="button" id="publishProducts">نشر القائمة الحالية</button>
             <button class="ghost" type="button" id="adminLogout">تسجيل الخروج</button>
           </div>
         </div>
         <p class="admin-note">
-          بعد أي تعديل، اضغط "تصدير products.json" ثم ارفع الملف إلى GitHub ليظهر
-          التحديث لكل العملاء.
+          بعد النشر أول مرة، أي تعديل أو إضافة سيظهر فورًا للجميع.
         </p>
         <form class="admin-form" id="addProductForm">
           <div class="field">
@@ -182,7 +180,7 @@
         </div>
         <form id="adminForm" class="modal-form">
           <label class="field">
-            <span>اسم المستخدم</span>
+            <span>البريد الإلكتروني أو اسم المستخدم</span>
             <input type="text" name="username" required minlength="3" placeholder="admin" />
           </label>
           <label class="field">
@@ -198,6 +196,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=4"></script>
+    <script type="module" src="app.js?v=5"></script>
   </body>
 </html>
