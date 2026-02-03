@@ -8,6 +8,8 @@ const ADMIN_KEY = "lahm-admin-unlocked";
 const MAX_IMAGE_SIZE = 900;
 const IMAGE_QUALITY = 0.8;
 const QTY_STEP = 0.5;
+const PRODUCTS_URL = "products.json";
+const EXPORT_FILENAME = "products.json";
 
 const defaultProducts = [
   {
@@ -68,7 +70,7 @@ const defaultProducts = [
   },
 ];
 
-let products = loadProducts();
+let products = [...defaultProducts];
 
 const productGrid = document.getElementById("productGrid");
 const cartItems = document.getElementById("cartItems");
@@ -86,33 +88,64 @@ const adminForm = document.getElementById("adminForm");
 const adminError = document.getElementById("adminError");
 const closeAdminButtons = document.querySelectorAll("[data-close-admin]");
 const adminLogout = document.getElementById("adminLogout");
+const exportProductsBtn = document.getElementById("exportProducts");
+const reloadProductsBtn = document.getElementById("reloadProducts");
 
 const cart = new Map();
 
-function loadProducts() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    return [...defaultProducts];
+function sanitizeProducts(list) {
+  if (!Array.isArray(list) || list.length === 0) {
+    return null;
   }
 
-  try {
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [...defaultProducts];
-    }
-
-    const cleaned = parsed.filter(
+  const cleaned = list
+    .filter(
       (item) =>
         item &&
         typeof item.id === "string" &&
         typeof item.name === "string" &&
         Number.isFinite(Number(item.price)) &&
         typeof item.image === "string"
-    );
+    )
+    .map((item) => ({
+      ...item,
+      price: Number(item.price),
+      image: normalizeImageInput(item.image),
+      alt: item.name,
+      discountPrice:
+        item.discountPrice === null || item.discountPrice === undefined
+          ? null
+          : Number(item.discountPrice),
+      discountStart: item.discountStart || "",
+      discountEnd: item.discountEnd || "",
+    }));
 
-    return cleaned.length ? cleaned : [...defaultProducts];
+  return cleaned.length ? cleaned : null;
+}
+
+function loadLocalProducts() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(stored);
+    return sanitizeProducts(parsed);
   } catch (error) {
-    return [...defaultProducts];
+    return null;
+  }
+}
+
+async function loadRemoteProducts() {
+  try {
+    const response = await fetch(`${PRODUCTS_URL}?v=${Date.now()}`);
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    return sanitizeProducts(data);
+  } catch (error) {
+    return null;
   }
 }
 
@@ -254,6 +287,12 @@ function getValidatedDiscount(basePrice, discountPriceValue, discountStart, disc
 function showStorageWarning() {
   window.alert(
     "التعديل ظهر لكن لم يُحفظ على الجهاز. قلّل حجم الصورة أو استخدم رابط صورة بدلاً من ملف كبير."
+  );
+}
+
+function showExportWarning() {
+  window.alert(
+    "ملحوظة: هناك صور مرفوعة من جهازك ومخزنة داخل الملف. الأفضل استخدام مسار assets/ أو رابط مباشر قبل التصدير."
   );
 }
 
@@ -757,42 +796,3 @@ closeAdminButtons.forEach((button) => {
   button.addEventListener("click", closeAdminModal);
 });
 
-if (adminForm) {
-  adminForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const username = adminForm.elements.username.value.trim();
-    const password = adminForm.elements.password.value.trim();
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      localStorage.setItem(ADMIN_KEY, "1");
-      showAdmin();
-      closeAdminModal();
-      adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    if (adminError) {
-      adminError.textContent = "كلمة المرور غير صحيحة.";
-    }
-  });
-}
-
-if (adminLogout) {
-  adminLogout.addEventListener("click", () => {
-    localStorage.removeItem(ADMIN_KEY);
-    hideAdmin();
-  });
-}
-
-function autoLogout() {
-  localStorage.removeItem(ADMIN_KEY);
-  hideAdmin();
-}
-
-window.addEventListener("pagehide", autoLogout);
-window.addEventListener("beforeunload", autoLogout);
-
-renderProducts();
-renderCart();
-renderAdminList();
-if (isAdminUnlocked()) {
-  showAdmin();
-}
