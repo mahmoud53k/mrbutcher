@@ -83,6 +83,7 @@ const addProductForm = document.getElementById("addProductForm");
 const adminList = document.getElementById("adminList");
 const adminSection = document.getElementById("admin");
 const adminTrigger = document.getElementById("adminTrigger");
+const legacyAdminTrigger = document.querySelector(".powered-by-btn, .powered-by span, .powered-by");
 const adminModal = document.getElementById("adminModal");
 const adminForm = document.getElementById("adminForm");
 const adminError = document.getElementById("adminError");
@@ -781,8 +782,10 @@ if (addProductForm) {
   });
 }
 
-if (adminTrigger) {
-  adminTrigger.addEventListener("click", () => {
+const adminTriggerElement = adminTrigger || legacyAdminTrigger;
+
+if (adminTriggerElement) {
+  adminTriggerElement.addEventListener("click", () => {
     if (isAdminUnlocked()) {
       showAdmin();
       adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -796,3 +799,96 @@ closeAdminButtons.forEach((button) => {
   button.addEventListener("click", closeAdminModal);
 });
 
+if (adminForm) {
+  adminForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const usernameInput = adminForm.elements.username;
+    const username = usernameInput ? usernameInput.value.trim() : ADMIN_USERNAME;
+    const password = adminForm.elements.password.value.trim();
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      localStorage.setItem(ADMIN_KEY, "1");
+      showAdmin();
+      closeAdminModal();
+      adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (adminError) {
+      adminError.textContent = "كلمة المرور غير صحيحة.";
+    }
+  });
+}
+
+if (adminLogout) {
+  adminLogout.addEventListener("click", () => {
+    localStorage.removeItem(ADMIN_KEY);
+    hideAdmin();
+  });
+}
+
+function autoLogout() {
+  localStorage.removeItem(ADMIN_KEY);
+  hideAdmin();
+}
+
+window.addEventListener("pagehide", autoLogout);
+window.addEventListener("beforeunload", autoLogout);
+
+async function initProducts() {
+  const local = loadLocalProducts();
+  if (local) {
+    products = local;
+  } else {
+    const remote = await loadRemoteProducts();
+    if (remote) {
+      products = remote;
+    } else {
+      products = [...defaultProducts];
+    }
+  }
+  renderProducts();
+  renderCart();
+  renderAdminList();
+  if (isAdminUnlocked()) {
+    showAdmin();
+  }
+}
+
+if (exportProductsBtn) {
+  exportProductsBtn.addEventListener("click", () => {
+    const hasEmbedded = products.some(
+      (item) => item.image.startsWith("data:") || item.image.startsWith("blob:")
+    );
+    if (hasEmbedded) {
+      showExportWarning();
+    }
+    const blob = new Blob([JSON.stringify(products, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = EXPORT_FILENAME;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+}
+
+if (reloadProductsBtn) {
+  reloadProductsBtn.addEventListener("click", async () => {
+    localStorage.removeItem(STORAGE_KEY);
+    const remote = await loadRemoteProducts();
+    if (remote) {
+      products = remote;
+      renderProducts();
+      renderCart();
+      renderAdminList();
+      window.alert("تم تحميل بيانات GitHub.");
+    } else {
+      window.alert("تعذر تحميل البيانات من GitHub.");
+    }
+  });
+}
+
+initProducts();
