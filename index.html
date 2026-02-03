@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Changa:wght@600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=3" />
   </head>
   <body>
     <div class="page">
@@ -66,8 +66,16 @@
             <h2>إدارة المنتجات</h2>
             <p>إضافة أو تعديل الأسعار والصور يتم حفظه على جهازك مباشرة.</p>
           </div>
-          <button class="ghost" type="button" id="adminLogout">تسجيل الخروج</button>
+          <div class="admin-controls">
+            <button class="ghost" type="button" id="reloadProducts">تحميل من GitHub</button>
+            <button class="save-btn" type="button" id="exportProducts">تصدير products.json</button>
+            <button class="ghost" type="button" id="adminLogout">تسجيل الخروج</button>
+          </div>
         </div>
+        <p class="admin-note">
+          بعد أي تعديل، اضغط "تصدير products.json" ثم ارفع الملف إلى GitHub ليظهر
+          التحديث لكل العملاء.
+        </p>
         <form class="admin-form" id="addProductForm">
           <div class="field">
             <span>اسم المنتج</span>
@@ -190,6 +198,6 @@
       </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=3"></script>
   </body>
 </html>
