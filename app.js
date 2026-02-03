@@ -881,11 +881,21 @@ function getAuthErrorMessage(error) {
       return "البريد الإلكتروني غير صحيح.";
     case "auth/user-not-found":
     case "auth/wrong-password":
+    case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
       return "بيانات الدخول غير صحيحة.";
+    case "auth/operation-not-allowed":
+      return "فعّل تسجيل الدخول بالبريد وكلمة المرور في Firebase.";
+    case "auth/network-request-failed":
+      return "مشكلة اتصال بالإنترنت. حاول مرة أخرى.";
+    case "auth/invalid-api-key":
+      return "مفاتيح Firebase غير صحيحة.";
+    case "auth/user-disabled":
+      return "هذا الحساب موقوف.";
     case "auth/too-many-requests":
       return "محاولات كثيرة، حاول لاحقًا.";
     default:
-      return "تعذر تسجيل الدخول.";
+      return `تعذر تسجيل الدخول (${error.code}).`;
   }
 }
 
