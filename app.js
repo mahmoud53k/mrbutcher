@@ -1,17 +1,57 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  getDocs,
+  writeBatch,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
 const STORE_NAME = "لحوم الأستاذ";
 const WHATSAPP_NUMBER = "201040123535"; // ضع رقم الواتساب بدون علامة + أو مسافات
 const CURRENCY = "ج.م";
-const STORAGE_KEY = "lahm-products-v1";
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "1122026";
-const ADMIN_KEY = "lahm-admin-unlocked";
 const MAX_IMAGE_SIZE = 900;
 const IMAGE_QUALITY = 0.8;
+const MAX_IMAGE_BYTES = 900 * 1024;
 const QTY_STEP = 0.5;
-const PRODUCTS_URL = "products.json";
-const EXPORT_FILENAME = "products.json";
+const PRODUCTS_COLLECTION = "products";
+const ADMIN_EMAIL_DOMAIN = "mrbutcher.local";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCRRl9ecLsqiZY2wM9uPnWbBtNmboxbqQo",
+  authDomain: "mrbutcher-9e973.firebaseapp.com",
+  projectId: "mrbutcher-9e973",
+  storageBucket: "mrbutcher-9e973.firebasestorage.app",
+  messagingSenderId: "307159067780",
+  appId: "1:307159067780:web:cd2f533f1e360dbbc1e6d1",
+  measurementId: "G-L57QRQ0CFJ",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 const defaultProducts = [
+  {
+    id: "family-box",
+    name: "بوكس العيله",
+    price: 2050,
+    image: "assets/item7.png",
+    alt: "بوكس العيله",
+  },
   {
     id: "minced-meat",
     name: "لحم مفروم بلدي",
@@ -89,8 +129,7 @@ const adminForm = document.getElementById("adminForm");
 const adminError = document.getElementById("adminError");
 const closeAdminButtons = document.querySelectorAll("[data-close-admin]");
 const adminLogout = document.getElementById("adminLogout");
-const exportProductsBtn = document.getElementById("exportProducts");
-const reloadProductsBtn = document.getElementById("reloadProducts");
+const publishProductsBtn = document.getElementById("publishProducts");
 
 const cart = new Map();
 
@@ -124,37 +163,88 @@ function sanitizeProducts(list) {
   return cleaned.length ? cleaned : null;
 }
 
-function loadLocalProducts() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    return null;
+function normalizeAdminEmail(value) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
   }
-  try {
-    const parsed = JSON.parse(stored);
-    return sanitizeProducts(parsed);
-  } catch (error) {
-    return null;
+  if (trimmed.includes("@")) {
+    return trimmed;
   }
+  return `${trimmed}@${ADMIN_EMAIL_DOMAIN}`;
 }
 
-async function loadRemoteProducts() {
+function isAdminAuthenticated() {
+  return Boolean(auth.currentUser);
+}
+
+async function saveProductToFirestore(id, data, isNew) {
+  if (!isAdminAuthenticated()) {
+    window.alert("من فضلك سجل الدخول كمسؤول أولاً.");
+    return false;
+  }
   try {
-    const response = await fetch(`${PRODUCTS_URL}?v=${Date.now()}`);
-    if (!response.ok) {
-      return null;
+    const payload = {
+      ...data,
+      updatedAt: serverTimestamp(),
+    };
+    if (isNew) {
+      payload.createdAt = serverTimestamp();
     }
-    const data = await response.json();
-    return sanitizeProducts(data);
-  } catch (error) {
-    return null;
-  }
-}
-
-function saveProducts() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    await setDoc(doc(db, PRODUCTS_COLLECTION, id), payload, { merge: true });
     return true;
   } catch (error) {
+    window.alert("تعذر حفظ البيانات، حاول مرة أخرى.");
+    return false;
+  }
+}
+
+async function deleteProductFromFirestore(id) {
+  if (!isAdminAuthenticated()) {
+    window.alert("من فضلك سجل الدخول كمسؤول أولاً.");
+    return false;
+  }
+  try {
+    await deleteDoc(doc(db, PRODUCTS_COLLECTION, id));
+    return true;
+  } catch (error) {
+    window.alert("تعذر حذف المنتج، حاول مرة أخرى.");
+    return false;
+  }
+}
+
+async function publishProductsToFirebase(list) {
+  if (!isAdminAuthenticated()) {
+    window.alert("من فضلك سجل الدخول كمسؤول أولاً.");
+    return false;
+  }
+  try {
+    const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    const batch = writeBatch(db);
+    snapshot.forEach((docSnap) => batch.delete(docSnap.ref));
+
+    list.forEach((item, index) => {
+      const id = item.id || `prod-${Date.now()}-${index}`;
+      batch.set(doc(db, PRODUCTS_COLLECTION, id), {
+        ...item,
+        price: Number(item.price),
+        image: normalizeImageInput(item.image),
+        alt: item.name,
+        discountPrice:
+          item.discountPrice === null || item.discountPrice === undefined
+            ? null
+            : Number(item.discountPrice),
+        discountStart: item.discountStart || "",
+        discountEnd: item.discountEnd || "",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    });
+
+    await batch.commit();
+    return true;
+  } catch (error) {
+    window.alert("تعذر نشر القائمة، حاول مرة أخرى.");
     return false;
   }
 }
@@ -178,6 +268,12 @@ function fileToDataUrl(file) {
         }
         ctx.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL("image/jpeg", IMAGE_QUALITY);
+        const base64 = dataUrl.split(",")[1] || "";
+        const bytes = Math.ceil((base64.length * 3) / 4);
+        if (bytes > MAX_IMAGE_BYTES) {
+          reject(new Error("Image too large"));
+          return;
+        }
         resolve(dataUrl);
       };
       img.onerror = () => reject(new Error("Image load failed"));
@@ -285,20 +381,8 @@ function getValidatedDiscount(basePrice, discountPriceValue, discountStart, disc
   return { discountPrice, discountStart, discountEnd };
 }
 
-function showStorageWarning() {
-  window.alert(
-    "التعديل ظهر لكن لم يُحفظ على الجهاز. قلّل حجم الصورة أو استخدم رابط صورة بدلاً من ملف كبير."
-  );
-}
-
-function showExportWarning() {
-  window.alert(
-    "ملحوظة: هناك صور مرفوعة من جهازك ومخزنة داخل الملف. الأفضل استخدام مسار assets/ أو رابط مباشر قبل التصدير."
-  );
-}
-
-function isAdminUnlocked() {
-  return localStorage.getItem(ADMIN_KEY) === "1";
+function showImageSizeWarning() {
+  window.alert("حجم الصورة كبير. استخدم رابط صورة أو صورة أصغر.");
 }
 
 function showAdmin() {
@@ -598,48 +682,37 @@ function renderAdminList() {
         try {
           updatedImage = await fileToDataUrl(fileInput.files[0]);
         } catch (error) {
-          window.alert("تعذر قراءة الصورة، حاول مرة أخرى.");
+          if (error.message === "Image too large") {
+            showImageSizeWarning();
+          } else {
+            window.alert("تعذر قراءة الصورة، حاول مرة أخرى.");
+          }
           return;
         }
       }
 
-      products = products.map((item) =>
-        item.id === product.id
-          ? {
-              ...item,
-              name: updatedName,
-              price: updatedPrice,
-              image: updatedImage,
-              alt: updatedName,
-              discountPrice: discountResult.discountPrice,
-              discountStart: discountResult.discountStart,
-              discountEnd: discountResult.discountEnd,
-            }
-          : item
-      );
+      const updatedPayload = {
+        name: updatedName,
+        price: updatedPrice,
+        image: updatedImage,
+        alt: updatedName,
+        discountPrice: discountResult.discountPrice,
+        discountStart: discountResult.discountStart,
+        discountEnd: discountResult.discountEnd,
+      };
 
-      const saved = saveProducts();
-      renderProducts();
-      renderAdminList();
-      renderCart();
+      const saved = await saveProductToFirestore(product.id, updatedPayload, false);
       if (!saved) {
-        showStorageWarning();
+        return;
       }
     });
 
-    deleteBtn.addEventListener("click", () => {
+    deleteBtn.addEventListener("click", async () => {
       const confirmed = window.confirm("هل تريد حذف هذا المنتج؟");
       if (!confirmed) {
         return;
       }
-      products = products.filter((item) => item.id !== product.id);
-      const saved = saveProducts();
-      renderProducts();
-      renderAdminList();
-      renderCart();
-      if (!saved) {
-        showStorageWarning();
-      }
+      await deleteProductFromFirestore(product.id);
     });
 
     adminList.appendChild(row);
@@ -749,7 +822,11 @@ if (addProductForm) {
       try {
         image = await fileToDataUrl(imageFile);
       } catch (error) {
-        window.alert("تعذر قراءة الصورة، حاول مرة أخرى.");
+        if (error.message === "Image too large") {
+          showImageSizeWarning();
+        } else {
+          window.alert("تعذر قراءة الصورة، حاول مرة أخرى.");
+        }
         return;
       }
     }
@@ -770,15 +847,11 @@ if (addProductForm) {
       discountEnd: discountResult.discountEnd,
     };
 
-    products = [newProduct, ...products];
-    const saved = saveProducts();
-    renderProducts();
-    renderAdminList();
-    renderCart();
-    addProductForm.reset();
+    const saved = await saveProductToFirestore(newProduct.id, newProduct, true);
     if (!saved) {
-      showStorageWarning();
+      return;
     }
+    addProductForm.reset();
   });
 }
 
@@ -786,7 +859,7 @@ const adminTriggerElement = adminTrigger || legacyAdminTrigger;
 
 if (adminTriggerElement) {
   adminTriggerElement.addEventListener("click", () => {
-    if (isAdminUnlocked()) {
+    if (isAdminAuthenticated()) {
       showAdmin();
       adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -799,96 +872,117 @@ closeAdminButtons.forEach((button) => {
   button.addEventListener("click", closeAdminModal);
 });
 
+function getAuthErrorMessage(error) {
+  if (!error?.code) {
+    return "تعذر تسجيل الدخول.";
+  }
+  switch (error.code) {
+    case "auth/invalid-email":
+      return "البريد الإلكتروني غير صحيح.";
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+      return "بيانات الدخول غير صحيحة.";
+    case "auth/too-many-requests":
+      return "محاولات كثيرة، حاول لاحقًا.";
+    default:
+      return "تعذر تسجيل الدخول.";
+  }
+}
+
 if (adminForm) {
-  adminForm.addEventListener("submit", (event) => {
+  adminForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const usernameInput = adminForm.elements.username;
-    const username = usernameInput ? usernameInput.value.trim() : ADMIN_USERNAME;
+    const usernameInput = adminForm.elements.username?.value || "";
     const password = adminForm.elements.password.value.trim();
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      localStorage.setItem(ADMIN_KEY, "1");
-      showAdmin();
-      closeAdminModal();
-      adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const email = normalizeAdminEmail(usernameInput);
+    if (!email || !password) {
+      if (adminError) {
+        adminError.textContent = "أدخل البريد الإلكتروني وكلمة المرور.";
+      }
       return;
     }
-    if (adminError) {
-      adminError.textContent = "كلمة المرور غير صحيحة.";
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      closeAdminModal();
+      adminSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      if (adminError) {
+        adminError.textContent = getAuthErrorMessage(error);
+      }
     }
   });
 }
 
 if (adminLogout) {
-  adminLogout.addEventListener("click", () => {
-    localStorage.removeItem(ADMIN_KEY);
+  adminLogout.addEventListener("click", async () => {
+    await signOut(auth);
     hideAdmin();
   });
 }
 
-function autoLogout() {
-  localStorage.removeItem(ADMIN_KEY);
-  hideAdmin();
-}
-
-window.addEventListener("pagehide", autoLogout);
-window.addEventListener("beforeunload", autoLogout);
-
-async function initProducts() {
-  const local = loadLocalProducts();
-  if (local) {
-    products = local;
-  } else {
-    const remote = await loadRemoteProducts();
-    if (remote) {
-      products = remote;
-    } else {
-      products = [...defaultProducts];
-    }
+window.addEventListener("pagehide", () => {
+  if (auth.currentUser) {
+    signOut(auth);
   }
-  renderProducts();
-  renderCart();
-  renderAdminList();
-  if (isAdminUnlocked()) {
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
     showAdmin();
+  } else {
+    hideAdmin();
   }
-}
+});
 
-if (exportProductsBtn) {
-  exportProductsBtn.addEventListener("click", () => {
-    const hasEmbedded = products.some(
-      (item) => item.image.startsWith("data:") || item.image.startsWith("blob:")
-    );
-    if (hasEmbedded) {
-      showExportWarning();
-    }
-    const blob = new Blob([JSON.stringify(products, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = EXPORT_FILENAME;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  });
-}
+function startProductsListener() {
+  const productsQuery = query(
+    collection(db, PRODUCTS_COLLECTION),
+    orderBy("createdAt", "desc")
+  );
 
-if (reloadProductsBtn) {
-  reloadProductsBtn.addEventListener("click", async () => {
-    localStorage.removeItem(STORAGE_KEY);
-    const remote = await loadRemoteProducts();
-    if (remote) {
-      products = remote;
+  onSnapshot(
+    productsQuery,
+    (snapshot) => {
+      if (snapshot.empty) {
+        products = [...defaultProducts];
+      } else {
+        const list = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }));
+        products = sanitizeProducts(list) || [];
+      }
       renderProducts();
       renderCart();
       renderAdminList();
-      window.alert("تم تحميل بيانات GitHub.");
-    } else {
-      window.alert("تعذر تحميل البيانات من GitHub.");
+    },
+    () => {
+      products = [...defaultProducts];
+      renderProducts();
+      renderCart();
+      renderAdminList();
+    }
+  );
+}
+
+if (publishProductsBtn) {
+  publishProductsBtn.addEventListener("click", async () => {
+    const confirmed = window.confirm(
+      "سيتم استبدال كل المنتجات في Firebase بالقائمة الحالية. هل تريد المتابعة؟"
+    );
+    if (!confirmed) {
+      return;
+    }
+    const cleaned = sanitizeProducts(products);
+    if (!cleaned) {
+      window.alert("لا توجد منتجات للنشر.");
+      return;
+    }
+    const published = await publishProductsToFirebase(cleaned);
+    if (published) {
+      window.alert("تم نشر القائمة بنجاح.");
     }
   });
 }
 
-initProducts();
+startProductsListener();
