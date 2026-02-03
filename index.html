@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لحوم الأستاذ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Changa:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="brand">
+          <div class="logo">
+            <img src="assets/logo.png" alt="شعار لحوم الأستاذ" />
+          </div>
+          <div class="brand-text">
+            <h1>لحوم الأستاذ</h1>
+            <p>لحوم طازجة مختارة يوميًا بجودة مضمونة</p>
+          </div>
+        </div>
+        <div class="hero-cta">
+          <p>اطلب احتياجك في دقائق عبر واتساب</p>
+          <a class="scroll-btn" href="#products">تصفح المنتجات</a>
+        </div>
+      </header>
+
+      <main class="content" id="products">
+        <section class="products">
+          <div class="section-title">
+            <h2>المنتجات المتاحة</h2>
+            <p>اختر المنتج المفضل وأضفه للسلة مباشرة.</p>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </section>
+
+        <aside class="cart">
+          <div class="section-title">
+            <h2>سلة الطلبات</h2>
+            <p>راجع طلبك قبل الإرسال على واتساب.</p>
+          </div>
+          <div class="cart-items" id="cartItems"></div>
+          <div class="cart-summary">
+            <div class="row">
+              <span>الإجمالي</span>
+              <strong id="cartTotal">0 ج.م</strong>
+            </div>
+            <button id="whatsappBtn" class="whatsapp" disabled>
+              إرسال الطلب على واتساب
+            </button>
+            <p class="note">
+              سيتم فتح واتساب برسالة جاهزة ويمكنك تعديلها قبل الإرسال.
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <div>
+          <strong>لحوم الأستاذ</strong>
+          <p>خدمة يومية من الساعة 10 صباحًا إلى 12:30 مساءً</p>
+        </div>
+        <div>
+          <p>
+            للاستفسار السريع:
+            <a class="phone-link" href="tel:201040123535">201040123535</a>
+          </p>
+          <a
+            class="map-link"
+            href="https://maps.app.goo.gl/QrxyBini7WewmkpJA"
+            target="_blank"
+            rel="noopener"
+          >
+            الموقع على الخريطة
+          </a>
+        </div>
+      </footer>
+
+      <div class="powered-by">
+        <span>Powered by Mahmoud Awad</span>
+      </div>
+    </div>
+
+    <div class="modal" id="orderModal" aria-hidden="true" role="dialog" aria-labelledby="orderTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="orderTitle">بيانات الطلب</h3>
+          <button type="button" class="modal-close" data-close-modal aria-label="إغلاق">×</button>
+        </div>
+        <form id="orderForm" class="modal-form">
+          <label class="field">
+            <span>الاسم</span>
+            <input type="text" name="customerName" required minlength="2" placeholder="اكتب اسمك" />
+          </label>
+          <label class="field">
+            <span>المكان</span>
+            <textarea
+              name="customerLocation"
+              required
+              minlength="3"
+              rows="3"
+              placeholder="العنوان أو أقرب علامة مميزة"
+            ></textarea>
+          </label>
+          <div class="modal-actions">
+            <button type="submit" class="whatsapp">إرسال الطلب</button>
+            <button type="button" class="ghost" data-close-modal>إلغاء</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
