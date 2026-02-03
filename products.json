@@ -1,5 +1,15 @@
 [
   {
+    "id": "prod-1770149048692",
+    "name": "بوكس العيله",
+    "price": 2050,
+    "image": "assets/item7.png",
+    "alt": "بوكس العيله",
+    "discountPrice": null,
+    "discountStart": "",
+    "discountEnd": ""
+  },
+  {
     "id": "minced-meat",
     "name": "لحم مفروم بلدي",
     "price": 390,
