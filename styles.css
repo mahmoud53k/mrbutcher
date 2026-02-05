@@ -58,7 +58,14 @@ body::before {
   box-shadow: var(--shadow);
   border: 1px solid rgba(141, 42, 36, 0.1);
   animation: fadeIn 0.9s ease;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    padding 0.3s ease,
+    gap 0.3s ease;
+  position: sticky;
+  top: 16px;
+  z-index: 12;
 }
 
 .hero:hover {
@@ -125,6 +132,8 @@ body::before {
   text-align: left;
   display: grid;
   gap: 12px;
+  max-height: 140px;
+  transition: opacity 0.25s ease, max-height 0.3s ease;
 }
 
 .hero-cta p {
@@ -149,11 +158,43 @@ body::before {
   box-shadow: 0 12px 22px rgba(141, 42, 36, 0.25);
 }
 
+.hero.is-collapsed {
+  padding: 16px 22px;
+  gap: 18px;
+}
+
+.hero.is-collapsed .logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(141, 42, 36, 0.2);
+}
+
+.hero.is-collapsed .brand-text h1 {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.hero.is-collapsed .brand-text p {
+  font-size: 0.9rem;
+}
+
+.hero.is-collapsed .hero-cta {
+  opacity: 0;
+  max-height: 0;
+  pointer-events: none;
+}
+
 .content {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
   gap: 28px;
   align-items: start;
+}
+
+.catalog {
+  display: grid;
+  gap: 32px;
 }
 
 .section-title h2 {
@@ -502,6 +543,17 @@ input:disabled {
 
 .field input,
 .field textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(45, 34, 32, 0.15);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--charcoal);
+  background: white;
+}
+
+.field select {
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(45, 34, 32, 0.15);
