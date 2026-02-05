@@ -143,6 +143,7 @@ const closeAdminButtons = document.querySelectorAll("[data-close-admin]");
 const adminLogout = document.getElementById("adminLogout");
 const publishProductsBtn = document.getElementById("publishProducts");
 const hero = document.querySelector(".hero");
+const cartCount = document.getElementById("cartCount");
 
 const cart = new Map();
 
@@ -559,6 +560,10 @@ function renderCart() {
     cartItems.innerHTML = "<p class=\"note\">سلتك فارغة. أضف منتجات للبدء.</p>";
     cartTotal.textContent = formatPrice(0);
     whatsappBtn.disabled = true;
+    if (cartCount) {
+      cartCount.textContent = "0";
+      cartCount.classList.add("is-hidden");
+    }
     return;
   }
 
@@ -613,6 +618,12 @@ function renderCart() {
 
   cartTotal.textContent = formatPrice(total);
   whatsappBtn.disabled = false;
+
+  if (cartCount) {
+    const count = cart.size;
+    cartCount.textContent = `${count}`;
+    cartCount.classList.toggle("is-hidden", count === 0);
+  }
 }
 
 function syncCartWithProducts() {
