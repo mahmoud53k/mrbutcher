@@ -26,9 +26,11 @@ const CURRENCY = "ج.م";
 const MAX_IMAGE_SIZE = 900;
 const IMAGE_QUALITY = 0.8;
 const MAX_IMAGE_BYTES = 900 * 1024;
-const QTY_STEP = 0.5;
+const DEFAULT_QTY_STEP = 0.5;
 const PRODUCTS_COLLECTION = "products";
 const ADMIN_EMAIL_DOMAIN = "mrbutcher.local";
+const CATEGORY_PRODUCT = "product";
+const CATEGORY_BOX = "box";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCRRl9ecLsqiZY2wM9uPnWbBtNmboxbqQo",
@@ -49,6 +51,7 @@ const defaultProducts = [
     id: "family-box",
     name: "بوكس العيله",
     price: 2050,
+    category: CATEGORY_BOX,
     image: "assets/item7.png",
     alt: "بوكس العيله",
   },
@@ -56,6 +59,7 @@ const defaultProducts = [
     id: "minced-meat",
     name: "لحم مفروم بلدي",
     price: 390,
+    category: CATEGORY_PRODUCT,
     image: "assets/item1.png",
     alt: "لحم مفروم بلدي",
   },
@@ -63,6 +67,7 @@ const defaultProducts = [
     id: "sausage",
     name: "سجق بلدي",
     price: 380,
+    category: CATEGORY_PRODUCT,
     image: "assets/item2.png",
     alt: "سجق بلدي",
   },
@@ -70,6 +75,7 @@ const defaultProducts = [
     id: "fillet",
     name: "عرق الفلتو",
     price: 530,
+    category: CATEGORY_PRODUCT,
     image: "assets/item3.png",
     alt: "عرق الفلتو",
   },
@@ -77,6 +83,7 @@ const defaultProducts = [
     id: "rosto",
     name: "عرق الرستو",
     price: 480,
+    category: CATEGORY_PRODUCT,
     image: "assets/rosto.png",
     alt: "عرق الرستو",
   },
@@ -84,6 +91,7 @@ const defaultProducts = [
     id: "tashkila",
     name: "تشكيلة الأستاذ",
     price: 980,
+    category: CATEGORY_BOX,
     image: "assets/tashkila.png",
     alt: "تشكيلة الأستاذ",
   },
@@ -91,6 +99,7 @@ const defaultProducts = [
     id: "cubes",
     name: "لحم مكعبات",
     price: 450,
+    category: CATEGORY_PRODUCT,
     image: "assets/cubes.png",
     alt: "لحم مكعبات",
   },
@@ -98,6 +107,7 @@ const defaultProducts = [
     id: "bone-in",
     name: "لحم بالعضم",
     price: 400,
+    category: CATEGORY_PRODUCT,
     image: "assets/bone.png",
     alt: "لحم بالعضم",
   },
@@ -105,6 +115,7 @@ const defaultProducts = [
     id: "kolata",
     name: "الكولاته",
     price: 0,
+    category: CATEGORY_PRODUCT,
     image: "assets/item4.png",
     alt: "الكولاته",
   },
@@ -112,6 +123,7 @@ const defaultProducts = [
 
 let products = [...defaultProducts];
 
+const boxesGrid = document.getElementById("boxesGrid");
 const productGrid = document.getElementById("productGrid");
 const cartItems = document.getElementById("cartItems");
 const cartTotal = document.getElementById("cartTotal");
@@ -130,6 +142,7 @@ const adminError = document.getElementById("adminError");
 const closeAdminButtons = document.querySelectorAll("[data-close-admin]");
 const adminLogout = document.getElementById("adminLogout");
 const publishProductsBtn = document.getElementById("publishProducts");
+const hero = document.querySelector(".hero");
 
 const cart = new Map();
 
@@ -150,6 +163,7 @@ function sanitizeProducts(list) {
     .map((item) => ({
       ...item,
       price: Number(item.price),
+      category: normalizeCategory(item.category),
       image: normalizeImageInput(item.image),
       alt: item.name,
       discountPrice:
@@ -228,6 +242,7 @@ async function publishProductsToFirebase(list) {
       batch.set(doc(db, PRODUCTS_COLLECTION, id), {
         ...item,
         price: Number(item.price),
+        category: normalizeCategory(item.category),
         image: normalizeImageInput(item.image),
         alt: item.name,
         discountPrice:
@@ -306,6 +321,22 @@ function normalizeImageInput(value) {
     return `assets/${trimmed}`;
   }
   return trimmed;
+}
+
+function normalizeCategory(value) {
+  return value === CATEGORY_BOX ? CATEGORY_BOX : CATEGORY_PRODUCT;
+}
+
+function getUnitName(product) {
+  return product.category === CATEGORY_BOX ? "بوكس" : "كجم";
+}
+
+function getPriceLabel(product) {
+  return product.category === CATEGORY_BOX ? "سعر البوكس" : "سعر الكيلو";
+}
+
+function getQtyStep(product) {
+  return product.category === CATEGORY_BOX ? 1 : DEFAULT_QTY_STEP;
 }
 
 function parseDateValue(value) {
@@ -429,19 +460,31 @@ function formatPrice(value) {
   return `${value.toFixed(2)} ${CURRENCY}`;
 }
 
-function roundQty(value) {
-  return Math.round(value / QTY_STEP) * QTY_STEP;
+function roundQty(value, step = DEFAULT_QTY_STEP) {
+  return Math.round(value / step) * step;
 }
 
-function formatQty(value) {
-  const rounded = roundQty(value);
+function formatQty(value, step = DEFAULT_QTY_STEP) {
+  const rounded = roundQty(value, step);
   return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1);
 }
 
-function renderProducts() {
-  productGrid.innerHTML = "";
+function renderGrid(list, grid, emptyMessage) {
+  if (!grid) {
+    return;
+  }
 
-  products.forEach((product, index) => {
+  grid.innerHTML = "";
+
+  if (list.length === 0) {
+    const note = document.createElement("p");
+    note.className = "note";
+    note.textContent = emptyMessage;
+    grid.appendChild(note);
+    return;
+  }
+
+  list.forEach((product, index) => {
     const card = document.createElement("article");
     card.className = "product-card";
     card.style.animationDelay = `${index * 0.05}s`;
@@ -453,6 +496,7 @@ function renderProducts() {
           product.discountEnd
         )}`
       : "";
+    const priceLabel = getPriceLabel(product);
 
     const priceMarkup = hasDiscount
       ? `
@@ -460,12 +504,12 @@ function renderProducts() {
         <span class="price-old">${formatPrice(product.price)}</span>
         <span class="price-new">${formatPrice(effectivePrice)}</span>
       </div>
-      <div class="price-label">سعر الكيلو</div>
+      <div class="price-label">${priceLabel}</div>
       <div class="deal-period">${periodText}</div>
     `
       : `
       <div class="price">${formatPrice(product.price)}</div>
-      <div class="price-label">سعر الكيلو</div>
+      <div class="price-label">${priceLabel}</div>
     `;
 
     card.innerHTML = `
@@ -486,7 +530,8 @@ function renderProducts() {
       button.classList.add("bump");
 
       const current = cart.get(product.id);
-      const qty = current ? roundQty(current.qty + QTY_STEP) : 1;
+      const step = getQtyStep(product);
+      const qty = current ? roundQty(current.qty + step, step) : 1;
       cart.set(product.id, {
         ...product,
         qty,
@@ -495,8 +540,16 @@ function renderProducts() {
       renderCart();
     });
 
-    productGrid.appendChild(card);
+    grid.appendChild(card);
   });
+}
+
+function renderCatalog() {
+  const boxes = products.filter((product) => product.category === CATEGORY_BOX);
+  const regular = products.filter((product) => product.category !== CATEGORY_BOX);
+
+  renderGrid(boxes, boxesGrid, "قريباً بوكسات جديدة.");
+  renderGrid(regular, productGrid, "لا توجد منتجات حالياً.");
 }
 
 function renderCart() {
@@ -514,6 +567,8 @@ function renderCart() {
 
   cart.forEach((item) => {
     const unitPrice = getEffectivePrice(item);
+    const step = getQtyStep(item);
+    const priceLabel = getPriceLabel(item);
     const subtotal = item.qty * unitPrice;
     total += subtotal;
 
@@ -524,22 +579,22 @@ function renderCart() {
       <div class="row">
         <div class="qty-controls" aria-label="تعديل الكمية">
           <button class="qty-btn" type="button" data-action="decrease">-</button>
-          <span>${formatQty(item.qty)}</span>
+          <span>${formatQty(item.qty, step)}</span>
           <button class="qty-btn" type="button" data-action="increase">+</button>
         </div>
-        <span class="unit-price">سعر الكيلو: ${formatPrice(unitPrice)}</span>
+        <span class="unit-price">${priceLabel}: ${formatPrice(unitPrice)}</span>
         <span>${formatPrice(subtotal)}</span>
       </div>
       <button class="remove-btn" type="button">إزالة</button>
     `;
 
     row.querySelector('[data-action="increase"]').addEventListener("click", () => {
-      cart.set(item.id, { ...item, qty: roundQty(item.qty + QTY_STEP) });
+      cart.set(item.id, { ...item, qty: roundQty(item.qty + step, step) });
       renderCart();
     });
 
     row.querySelector('[data-action="decrease"]').addEventListener("click", () => {
-      const nextQty = roundQty(item.qty - QTY_STEP);
+      const nextQty = roundQty(item.qty - step, step);
       if (nextQty <= 0) {
         cart.delete(item.id);
       } else {
@@ -569,7 +624,13 @@ function syncCartWithProducts() {
       idsToDelete.push(id);
       return;
     }
-    cart.set(id, { ...updated, qty: item.qty });
+    const step = getQtyStep(updated);
+    const qty = roundQty(item.qty, step);
+    if (qty <= 0) {
+      idsToDelete.push(id);
+      return;
+    }
+    cart.set(id, { ...updated, qty });
   });
 
   idsToDelete.forEach((id) => cart.delete(id));
@@ -590,6 +651,13 @@ function renderAdminList() {
         <img src="${product.image}" alt="${product.alt}" />
       </div>
       <div class="admin-fields">
+        <label class="field">
+          <span>نوع الصنف</span>
+          <select name="category">
+            <option value="product">منتج عادي</option>
+            <option value="box">بوكس / تجميعة جاهزة</option>
+          </select>
+        </label>
         <label class="field">
           <span>الاسم</span>
           <input type="text" name="name" value="${product.name}" />
@@ -634,6 +702,7 @@ function renderAdminList() {
     `;
 
     const previewImg = row.querySelector("img");
+    const categorySelect = row.querySelector('select[name="category"]');
     const nameInput = row.querySelector('input[name="name"]');
     const priceInput = row.querySelector('input[name="price"]');
     const discountPriceInput = row.querySelector('input[name="discountPrice"]');
@@ -643,6 +712,10 @@ function renderAdminList() {
     const fileInput = row.querySelector('input[name="imageFile"]');
     const saveBtn = row.querySelector(".save-btn");
     const deleteBtn = row.querySelector(".delete-btn");
+
+    if (categorySelect) {
+      categorySelect.value = normalizeCategory(product.category);
+    }
 
     fileInput.addEventListener("change", () => {
       const file = fileInput.files[0];
@@ -678,6 +751,7 @@ function renderAdminList() {
       }
 
       let updatedImage = normalizeImageInput(urlInput.value) || product.image;
+      const updatedCategory = normalizeCategory(categorySelect?.value);
       if (fileInput.files[0]) {
         try {
           updatedImage = await fileToDataUrl(fileInput.files[0]);
@@ -694,6 +768,7 @@ function renderAdminList() {
       const updatedPayload = {
         name: updatedName,
         price: updatedPrice,
+        category: updatedCategory,
         image: updatedImage,
         alt: updatedName,
         discountPrice: discountResult.discountPrice,
@@ -730,9 +805,11 @@ function buildWhatsAppMessage() {
 
   cart.forEach((item) => {
     const unitPrice = getEffectivePrice(item);
+    const step = getQtyStep(item);
+    const unitName = getUnitName(item);
     const subtotal = item.qty * unitPrice;
     lines.push(
-      `- ${item.name}: ${formatQty(item.qty)} كجم × ${unitPrice} = ${subtotal.toFixed(
+      `- ${item.name}: ${formatQty(item.qty, step)} ${unitName} × ${unitPrice} = ${subtotal.toFixed(
         2
       )} ${CURRENCY}`
     );
@@ -799,6 +876,7 @@ if (addProductForm) {
     const discountEnd = addProductForm.elements.discountEnd.value;
     const imageUrl = addProductForm.elements.imageUrl.value.trim();
     const imageFile = addProductForm.elements.imageFile.files[0];
+    const category = normalizeCategory(addProductForm.elements.category?.value);
 
     if (!name || !Number.isFinite(price) || price < 0) {
       window.alert("من فضلك أدخل اسم وسعر صحيح.");
@@ -840,6 +918,7 @@ if (addProductForm) {
       id: `prod-${Date.now()}`,
       name,
       price,
+      category,
       image,
       alt: name,
       discountPrice: discountResult.discountPrice,
@@ -944,6 +1023,16 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+function updateHeroState() {
+  if (!hero) {
+    return;
+  }
+  hero.classList.toggle("is-collapsed", window.scrollY > 140);
+}
+
+window.addEventListener("scroll", updateHeroState, { passive: true });
+window.addEventListener("load", updateHeroState);
+
 function startProductsListener() {
   const productsQuery = query(
     collection(db, PRODUCTS_COLLECTION),
@@ -962,13 +1051,13 @@ function startProductsListener() {
         }));
         products = sanitizeProducts(list) || [];
       }
-      renderProducts();
+      renderCatalog();
       renderCart();
       renderAdminList();
     },
     () => {
       products = [...defaultProducts];
-      renderProducts();
+      renderCatalog();
       renderCart();
       renderAdminList();
     }
