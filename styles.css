@@ -157,30 +157,48 @@ body::before {
 }
 
 .hero.is-collapsed {
-  padding: 16px 22px;
-  gap: 18px;
+  padding: 12px 20px;
+  gap: 16px;
+  background: linear-gradient(90deg, #7a3a1b, #8d2a24);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 14px 28px rgba(45, 34, 32, 0.18);
 }
 
 .hero.is-collapsed .logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  box-shadow: 0 10px 20px rgba(141, 42, 36, 0.2);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .hero.is-collapsed .brand-text h1 {
-  font-size: 1.6rem;
-  margin-bottom: 4px;
+  font-size: 1.45rem;
+  margin-bottom: 0;
+  color: #fff;
+  text-shadow: none;
 }
 
 .hero.is-collapsed .brand-text p {
-  font-size: 0.9rem;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
 }
 
 .hero.is-collapsed .hero-cta {
   opacity: 0;
   max-height: 0;
   pointer-events: none;
+}
+
+.hero.is-collapsed .brand-text h1::after {
+  opacity: 0;
+}
+
+.hero.is-collapsed .cart-link {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 
 .hero-actions {
@@ -411,8 +429,7 @@ input:disabled {
   border-radius: 24px;
   border: 1px solid rgba(141, 42, 36, 0.1);
   box-shadow: var(--shadow);
-  position: sticky;
-  top: 24px;
+  position: static;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
