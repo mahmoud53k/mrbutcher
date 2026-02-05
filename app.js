@@ -1038,11 +1038,16 @@ function updateHeroState() {
   if (!hero) {
     return;
   }
-  hero.classList.toggle("is-collapsed", window.scrollY > 140);
+  if (window.matchMedia("(max-width: 980px)").matches) {
+    hero.classList.remove("is-collapsed");
+    return;
+  }
+  hero.classList.toggle("is-collapsed", window.scrollY > 12);
 }
 
 window.addEventListener("scroll", updateHeroState, { passive: true });
 window.addEventListener("load", updateHeroState);
+window.addEventListener("resize", updateHeroState);
 
 function startProductsListener() {
   const productsQuery = query(
