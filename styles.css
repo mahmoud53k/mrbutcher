@@ -916,6 +916,8 @@ input:disabled {
 
 @media (max-width: 980px) {
   .hero {
+    position: static;
+    top: auto;
     flex-direction: column;
     align-items: flex-start;
   }
@@ -927,6 +929,19 @@ input:disabled {
 
   .hero-actions {
     align-self: flex-end;
+  }
+
+  .hero:not(.is-collapsed) .hero-actions {
+    display: none;
+  }
+
+  .hero.is-collapsed {
+    position: sticky;
+    top: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 18px 18px;
   }
 
   .hero,
