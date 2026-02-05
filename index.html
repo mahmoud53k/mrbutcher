@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Changa:wght@600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=6" />
   </head>
   <body>
     <div class="page">
@@ -31,13 +31,23 @@
       </header>
 
       <main class="content" id="products">
-        <section class="products">
-          <div class="section-title">
-            <h2>المنتجات المتاحة</h2>
-            <p>اختر المنتج المفضل وأضفه للسلة مباشرة.</p>
-          </div>
-          <div class="product-grid" id="productGrid"></div>
-        </section>
+        <div class="catalog">
+          <section class="boxes" id="boxes">
+            <div class="section-title">
+              <h2>بوكسات وتجميعات جاهزة</h2>
+              <p>اختيارات جاهزة للعيلة أو المناسبات بسعر موفر.</p>
+            </div>
+            <div class="product-grid" id="boxesGrid"></div>
+          </section>
+
+          <section class="products">
+            <div class="section-title">
+              <h2>المنتجات المتاحة</h2>
+              <p>اختر المنتج المفضل وأضفه للسلة مباشرة.</p>
+            </div>
+            <div class="product-grid" id="productGrid"></div>
+          </section>
+        </div>
 
         <aside class="cart">
           <div class="section-title">
@@ -78,6 +88,19 @@
           <div class="field">
             <span>اسم المنتج</span>
             <input type="text" name="name" required placeholder="مثال: لحم مفروم بلدي" />
+          </div>
+          <div class="field">
+            <span>نوع الصنف</span>
+            <div class="category-toggle" role="group" aria-label="نوع الصنف">
+              <label class="toggle-btn">
+                <input type="radio" name="category" value="product" checked />
+                <span>منتج عادي</span>
+              </label>
+              <label class="toggle-btn">
+                <input type="radio" name="category" value="box" />
+                <span>بوكس / تجميعة جاهزة</span>
+              </label>
+            </div>
           </div>
           <div class="field">
             <span>السعر (ج.م)</span>
@@ -196,6 +219,6 @@
       </div>
     </div>
 
-    <script type="module" src="app.js?v=6"></script>
+    <script type="module" src="app.js?v=7"></script>
   </body>
 </html>
