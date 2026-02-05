@@ -929,6 +929,15 @@ input:disabled {
     align-self: flex-end;
   }
 
+  .hero,
+  .hero-cta,
+  .logo,
+  .brand-text h1,
+  .cart-link,
+  .cart-count {
+    transition: none !important;
+  }
+
   .content {
     grid-template-columns: 1fr;
   }
