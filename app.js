@@ -1038,11 +1038,9 @@ function updateHeroState() {
   if (!hero) {
     return;
   }
-  if (window.matchMedia("(max-width: 980px)").matches) {
-    hero.classList.remove("is-collapsed");
-    return;
-  }
-  hero.classList.toggle("is-collapsed", window.scrollY > 12);
+  const isMobile = window.matchMedia("(max-width: 980px)").matches;
+  const threshold = isMobile ? 4 : 12;
+  hero.classList.toggle("is-collapsed", window.scrollY > threshold);
 }
 
 window.addEventListener("scroll", updateHeroState, { passive: true });
